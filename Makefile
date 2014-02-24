@@ -9,8 +9,17 @@ git-deps:
 	git clone https://github.com/epeli/aswyg-editor
 	$(MAKE) -C aswyg-editor
 
-watch:
-	watchify -d -t sassify -t hbsfy aswyg-editor/index.js -o aswyg.js
+browserify:
+	browserify -t hbsfy aswyg-editor/index.js > aswyg.js
+
+watch-browserify:
+	watchify -v -d -t hbsfy aswyg-editor/index.js -o aswyg.js
+
+scss:
+	node-sass -o aswyg.css aswyg-editor/scss/app.scss
+
+watch-scss:
+	node-sass --watch --source-comments map  --source-map -o aswyg.css aswyg-editor/scss/app.scss
 
 build-image:
 	docker build --tag $(IMAGE_NAME) .
