@@ -1,0 +1,125 @@
+html, body {
+  overflow: hidden; }
+
+div, html, body, iframe, ul, li, h1, h2, h3 {
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+  font-family: monospace; }
+
+.bb-panes .left-pane, .bb-panes .right-pane, .bb-panes .sep {
+  border-top: 1px solid lightgray; }
+.bb-panes .left-pane {
+  position: absolute;
+  top: 4em;
+  bottom: 0px; }
+.bb-panes .right-pane {
+  position: absolute;
+  top: 4em;
+  bottom: 0px;
+  right: 0px; }
+.bb-panes iframe, .bb-panes .editor-container, .bb-panes .bb-editor, .bb-panes .CodeMirror, .bb-panes .bb-preview {
+  height: 100%;
+  width: 100%; }
+.bb-panes .sep {
+  position: absolute;
+  top: 4em;
+  bottom: 0px;
+  width: 10px;
+  cursor: col-resize;
+  background: lightgray;
+  background: linear-gradient(to right, #D1D1D1 0%, #ffffff 45%, #ffffff 55%, #D1D1D1 100%); }
+
+.notification {
+  display: none;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 20em;
+  color: white;
+  background-color: red;
+  z-index: 1000;
+  padding: 1em; }
+
+.notification .close {
+  float: right; }
+
+.bb-toolbar {
+  position: absolute;
+  top: 0px;
+  height: 4em;
+  width: 100%;
+  background: #EDEDED; }
+  .bb-toolbar ul {
+    list-style: none;
+    height: 100%;
+    display: table; }
+  .bb-toolbar .bold {
+    font-weight: bold; }
+  .bb-toolbar .heading1, .bb-toolbar .help {
+    border-left: 1px solid lightgray; }
+  .bb-toolbar ul li {
+    display: table-cell;
+    vertical-align: middle; }
+    .bb-toolbar ul li button {
+      margin: 0.2em;
+      padding: 0px;
+      height: 3em;
+      width: 3em;
+      background-color: transparent;
+      border: 0px;
+      cursor: pointer;
+      border: 1px solid transparent; }
+      .bb-toolbar ul li button:hover {
+        border: 1px solid lightgray; }
+
+@media (max-width: 55em) {
+  .bb-toolbar button {
+    font-size: 0.7em; } }
+
+@media (min-width: 65em) {
+  .bb-toolbar button {
+    font-size: 1em; } }
+
+.arrow-up {
+  margin: 0px;
+  width: 0;
+  height: 0;
+  border-left: 2em solid transparent;
+  border-right: 2em solid transparent;
+  border-bottom: 2em solid lightgrey; }
+
+.bb-dropdown {
+  position: absolute;
+  z-index: 10001; }
+  .bb-dropdown a {
+    text-decoration: none;
+    color: blue; }
+    .bb-dropdown a:visited {
+      color: blue; }
+    .bb-dropdown a:hover {
+      text-decoration: underline; }
+  .bb-dropdown h1 {
+    padding: 0px;
+    font-size: 1em;
+    margin-bottom: 1em; }
+  .bb-dropdown .content-wrap {
+    padding: 0.3em;
+    background-color: lightgrey; }
+  .bb-dropdown .content {
+    padding: 1em;
+    background-color: white; }
+  .bb-dropdown li {
+    list-style: none; }
+    .bb-dropdown li button {
+      width: 100%;
+      text-align: left;
+      padding: 1em; }
+  .bb-dropdown ul {
+    margin: 0px; }
+
+.bb-selectmenu li {
+  margin-bottom: 1em; }
+
+.bb-titleform * {
+  display: block; }
