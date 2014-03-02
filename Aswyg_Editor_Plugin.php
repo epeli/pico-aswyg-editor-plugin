@@ -32,10 +32,33 @@ class Aswyg_Controller
         return isset($_SESSION['login']) && $_SESSION['login'];
     }
 
+    public function generate_password()
+    {
+        if (isset($_POST['password'])) {
+            $salt = substr(str_replace('+', '.', base64_encode(sha1(microtime(true), true))), 0, 22);
+            $hash = crypt($_POST['password'], '$2a$12$' . $salt);
+            return $hash;
+        }
+
+        return '
+        <form action="" method=post>
+            <input name=password type=text placeholder=password>
+            <input type=submit value="generate hash">
+        </form>
+        ';
+
+    }
+
+    private function is_password_ok($password)
+    {
+        global $config;
+        return crypt($password, $config['aswyg_password']) === $config['aswyg_password'];
+    }
+
     public function create_session()
     {
-        error_log("trying to create");
-        if (isset($_POST['password']) && $_POST['password'] === 'kala') {
+
+        if (isset($_POST['password']) && $this->is_password_ok($_POST['password'])) {
             $_SESSION['login'] = true;
             header("Location: " . $_SERVER['REQUEST_URI']);
         } else {
@@ -214,7 +237,7 @@ class Aswyg_Editor_Plugin
 
         // Urls ending with _draft, _edit, _index and _json are handled by
         // Aswyg Editor Plugin
-        $url_pat = '/^(.*?)(?:^|\/)(_draft$|_edit$|_index$|_json$|_logout$|$)/';
+        $url_pat = '/^(.*?)(?:^|\/)(_draft$|_edit$|_index$|_json$|_logout|_password$|$)/';
         preg_match($url_pat, $url, $groups);
 
 
@@ -240,6 +263,8 @@ class Aswyg_Editor_Plugin
         if (!$this->enabled) return;
 
         $aswyg = new Aswyg_Controller($this->url, $file);
+        if ($this->is('GET', '_password')) die($aswyg->generate_password());
+        if ($this->is('POST', '_password')) die($aswyg->generate_password());
 
         session_start();
         if ($this->is('POST')) die($aswyg->create_session());
