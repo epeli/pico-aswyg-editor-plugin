@@ -3,12 +3,12 @@
 var editor = new Aswyg(document.body, {
 
     fetchPageList: function() {
-        return Aswyg.$.get("_index");
+        return Aswyg.$.get("@index");
     },
 
     fetchPage: function(page) {
-        history.pushState(page, "", "/"  + page.slug + "/_edit");
-        return Aswyg.$.get("/" + page.slug + "/_json");
+        history.pushState(page, "", "/"  + page.slug + "/@edit");
+        return Aswyg.$.get("/" + page.slug + "/@json");
     },
 
     saveDraft: function(content) {
@@ -28,12 +28,12 @@ var editor = new Aswyg(document.body, {
     },
 
     createNew: function(page) {
-        history.pushState(page, "", "/"  + page.slug + "/_edit");
-        return Aswyg.$.get("/" + page.slug + "/_json");
+        history.pushState(page, "", "/"  + page.slug + "/@edit");
+        return Aswyg.$.get("/" + page.slug + "/@json");
     },
 
     logout: function() {
-        window.location = "/_logout";
+        window.location = "/@logout";
     },
 
     delete: function() {
@@ -41,7 +41,7 @@ var editor = new Aswyg(document.body, {
             url: editor.getPublicUrl(),
             type: "DELETE",
         }).then(function() {
-            window.location = "/_edit";
+            window.location = "/@edit";
         });
     }
 

@@ -139,7 +139,7 @@ class Aswyg_Controller
     {
         $data = array(
             'publicUrl' => $this->url,
-            'draftUrl' => $this->url === '/' ? '/_draft' : $this->url . '/_draft',
+            'draftUrl' => $this->url === '/' ? '/@draft' : $this->url . '/@draft',
             'draft' => @file_get_contents($this->draft_file),
             'public' => @file_get_contents($this->public_file)
         );
@@ -235,9 +235,9 @@ class Aswyg_Editor_Plugin
             $this->enabled = true;
         }
 
-        // Urls ending with _draft, _edit, _index and _json are handled by
+        // Urls ending with @draft, @edit, @index and @json are handled by
         // Aswyg Editor Plugin
-        $url_pat = '/^(.*?)(?:^|\/)(_draft$|_edit$|_index$|_json$|_logout|_password$|$)/';
+        $url_pat = '/^(.*?)(?:^|\/)(@draft$|@edit$|@index$|@json$|@logout|@password$|$)/';
         preg_match($url_pat, $url, $groups);
 
 
@@ -263,12 +263,12 @@ class Aswyg_Editor_Plugin
         if (!$this->enabled) return;
 
         $aswyg = new Aswyg_Controller($this->url, $file);
-        if ($this->is('GET', '_password')) die($aswyg->generate_password());
-        if ($this->is('POST', '_password')) die($aswyg->generate_password());
+        if ($this->is('GET', '@password')) die($aswyg->generate_password());
+        if ($this->is('POST', '@password')) die($aswyg->generate_password());
 
         session_start();
         if ($this->is('POST')) die($aswyg->create_session());
-        if ($this->is('GET', '_logout')) die($aswyg->destroy_session());
+        if ($this->is('GET', '@logout')) die($aswyg->destroy_session());
 
         if (!$aswyg->is_session_ok()) {
             die($aswyg->render_login_form());
@@ -276,7 +276,7 @@ class Aswyg_Editor_Plugin
 
         // If this is a draft request just change the file loaded by Pico to be
         // our draft file and continue normallly.
-        if ($this->is('GET', '_draft')) {
+        if ($this->is('GET', '@draft')) {
             if (file_exists($aswyg->draft_file)) {
                 $file = $aswyg->draft_file;
             }
@@ -284,10 +284,10 @@ class Aswyg_Editor_Plugin
         }
 
         // Otherwise stop pico machinery and render page using Aswyg_Controller
-        if ($this->is('PUT', '_draft')) die($aswyg->save_draft());
-        if ($this->is('GET', '_edit')) die($aswyg->render_editor());
-        if ($this->is('GET', '_json')) die($aswyg->render_page_json());
-        if ($this->is('GET', '_index')) die($aswyg->render_page_index_json());
+        if ($this->is('PUT', '@draft')) die($aswyg->save_draft());
+        if ($this->is('GET', '@edit')) die($aswyg->render_editor());
+        if ($this->is('GET', '@json')) die($aswyg->render_page_json());
+        if ($this->is('GET', '@index')) die($aswyg->render_page_index_json());
 
         if ($this->is('PUT')) die($aswyg->publish_page());
         if ($this->is('DELETE')) die($aswyg->delete_page());
