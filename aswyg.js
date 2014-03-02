@@ -156,13 +156,42 @@ var Content = Backbone.Model.extend({
         // Mixin the backend and ensure that it returns promises
         _.each(opts.backend, function(fn, key) {
             self[key] = function() {
-                var res = Promise.cast(fn.apply(self, arguments));
-                self.trigger(key, res);
+                var args = [].slice.call(arguments);
+                var res = Promise.cast(fn.apply(self, args));
+                self.trigger.apply(self, [key, res].concat(args));
                 return res;
             };
         });
 
+        this.on("saveDraft", function(p, content) {
+            var self = this;
+            p.then(function() {
+                self.set({
+                    dirty: false,
+                    draft: content
+                });
+            });
+        });
+
+        this.on("publish", function(p, content) {
+            var self = this;
+            p.then(function() {
+                self.set({
+                    "public": content,
+                    dirty: false,
+                    draft: null
+                });
+            });
+        });
+
     },
+
+    hasUnpublishedChanges: function() {
+        if (this.get("dirty")) return true;
+        if (!this.get("draft")) return false;
+        return this.get("draft") !== this.get("public");
+    },
+
 
     reset: function(data) {
         var self = this;
@@ -366,10 +395,6 @@ var Editor = Viewmaster.extend({
 
             self.setContentFromModel();
 
-            self.listenTo(self.model, "change:draft change:public", function() {
-                self.setContentFromModel();
-            });
-
             self.cm.on("change", function() {
                 self.model.set("dirty", true);
             });
@@ -387,7 +412,6 @@ var Editor = Viewmaster.extend({
     },
 
     save: function() {
-        var self = this;
         if (!this.model.get("dirty")) {
             console.log("Skipping autosave. Not dirty.");
             return;
@@ -396,9 +420,8 @@ var Editor = Viewmaster.extend({
         console.log("Autosaving...");
         this.model.saveDraft(this.getContent())
         .then(function() {
-            self.model.set("dirty", false);
             console.log("Autosave ok!");
-        }, errorReporter("Autosave failed"));
+        }).catch(errorReporter("Autosave failed"));
     },
 
     setContentFromModel: function() {
@@ -502,7 +525,7 @@ var Layout = Viewmaster.extend({
                 throw new Error("createNew is not implemented");
             }).then(function() {
                 form.parent.remove();
-            }, errorReporter("Failed to create new page"));
+            }).catch(errorReporter("Failed to create new page"));
 
         });
 
@@ -544,7 +567,7 @@ var Layout = Viewmaster.extend({
         self.model.saveDraft(self.editor.getContent())
         .then(function() {
             self.preview.refresh();
-        }, errorReporter("Failed to save draft"));
+        }).catch(errorReporter("Failed to save draft"));
     }
 
 
@@ -786,8 +809,17 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
 function program1(depth0,data) {
   
+  var buffer = "", stack1;
+  buffer += "\n        ";
+  stack1 = helpers['if'].call(depth0, (depth0 && depth0.publishDone), {hash:{},inverse:self.program(4, program4, data),fn:self.program(2, program2, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n\n    ";
+  return buffer;
+  }
+function program2(depth0,data) {
+  
   var buffer = "", stack1, helper;
-  buffer += "\n\n    Page is now public at\n    <a href=\"";
+  buffer += "\n\n        Page is now public at\n        <a href=\"";
   if (helper = helpers.publicUrl) { stack1 = helper.call(depth0, {hash:{},data:data}); }
   else { helper = (depth0 && depth0.publicUrl); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   buffer += escapeExpression(stack1)
@@ -795,20 +827,26 @@ function program1(depth0,data) {
   if (helper = helpers.publicUrl) { stack1 = helper.call(depth0, {hash:{},data:data}); }
   else { helper = (depth0 && depth0.publicUrl); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   buffer += escapeExpression(stack1)
-    + "</a>\n\n    ";
+    + "</a>\n\n        ";
   return buffer;
   }
 
-function program3(depth0,data) {
+function program4(depth0,data) {
   
   
-  return "\n\n    <a href=\"#\" class=\"publish\" >Yes!</a>\n\n    ";
+  return "\n\n        <a href=\"#\" class=\"publish\" >Yes!</a>\n\n        ";
   }
 
-  buffer += "\n<h1>\nPublish?\n</h1>\n\n<div class=\"content\">\n    ";
-  stack1 = helpers['if'].call(depth0, (depth0 && depth0['public']), {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data});
+function program6(depth0,data) {
+  
+  
+  return "\n\n        This page has no unpublished changed.\n\n    ";
+  }
+
+  buffer += "\n<h1>\nPublish?\n</h1>\n\n<div class=\"content\">\n    <p>\n    ";
+  stack1 = helpers['if'].call(depth0, (depth0 && depth0.unpublishedChanges), {hash:{},inverse:self.program(6, program6, data),fn:self.program(1, program1, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n</div>\n\n";
+  buffer += "\n    </p>\n</div>\n";
   return buffer;
   });
 
@@ -816,6 +854,7 @@ function program3(depth0,data) {
 
 var Viewmaster = require("viewmaster");
 var errorReporter = require("./errorReporter");
+var _ = require("underscore");
 
 var Publish = Viewmaster.extend({
 
@@ -824,7 +863,8 @@ var Publish = Viewmaster.extend({
     initialize: function(opts) {
         this.editor = opts.editor;
         this.state = {
-            public: false
+            publishDone: false,
+            unpublishedChanges: this.model.hasUnpublishedChanges()
         };
     },
 
@@ -841,18 +881,16 @@ var Publish = Viewmaster.extend({
         self.$text.text("Working...");
 
         self.model.publish(self.editor.getContent()).then(function() {
-            self.state.public = true;
+            self.state.publishDone = true;
             self.render();
-
-        }, function(err) {
+        }).catch(function(err) {
             errorReporter("Failed to publish")(err);
             self.$text.text("Failed to publish :(");
         });
     },
 
     context: function() {
-        this.state.publicUrl = this.model.get("publicUrl");
-        return this.state;
+        return _.extend({}, this.model.toJSON(), this.state);
     },
 
 
@@ -861,7 +899,7 @@ var Publish = Viewmaster.extend({
 
 module.exports = Publish;
 
-},{"./Publish.hbs":14,"./errorReporter":22,"viewmaster":81}],16:[function(require,module,exports){
+},{"./Publish.hbs":14,"./errorReporter":22,"underscore":80,"viewmaster":81}],16:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -1073,6 +1111,32 @@ var Toolbar = Viewmaster.extend({
     className: "bb-toolbar",
 
     template: require("./Toolbar.hbs"),
+
+    initialize: function() {
+        var self = this;
+        self.listenTo(self.model, "change", this.renderDirty.bind(this));
+
+    },
+
+    renderDirty: function() {
+        if (this.model.hasUnpublishedChanges()) {
+            this.$publish.addClass("dirty");
+        } else {
+            this.$publish.removeClass("dirty");
+        }
+
+        if (this.model.get("dirty")) {
+            this.$saveDraft.addClass("dirty");
+        } else {
+            this.$saveDraft.removeClass("dirty");
+        }
+    },
+
+    afterTemplate: function() {
+        this.$publish = this.$(".publish");
+        this.$saveDraft = this.$(".saveDraft");
+        this.renderDirty();
+    },
 
     context: function() {
         return {
