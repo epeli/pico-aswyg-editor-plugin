@@ -4,10 +4,16 @@ PORT = 8080
 NAME = aswyg
 IMAGE_NAME = aswygdev
 
+all: git-deps browserify scss
+
 
 git-deps:
 	git clone https://github.com/epeli/aswyg-editor
 	$(MAKE) -C aswyg-editor
+
+commit-assets: browserify scss
+	git add aswyg.css aswyg.js
+	git commit aswyg.css aswyg.js -m "Update assets"
 
 browserify:
 	browserify -t hbsfy aswyg-editor/index.js > aswyg.js
@@ -36,3 +42,6 @@ run-container:
 stop-container:
 	docker stop $(NAME) || true
 	docker rm $(NAME)
+
+clean:
+	rm -rf aswyg-editor
