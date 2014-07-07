@@ -124,7 +124,9 @@ div, html, body, iframe, ul, li, h1, h2, h3 {
     background-color: lightgrey; }
   .bb-dropdown .content {
     padding: 1em;
-    background-color: white; }
+    background-color: white;
+    max-height: 300px;
+    overflow-y: auto; }
   .bb-dropdown li {
     list-style: none; }
     .bb-dropdown li button {
