@@ -7,8 +7,7 @@ var editor = new Aswyg(document.body, {
     },
 
     fetchPage: function(page) {
-        history.pushState(page, "", "/"  + page.slug + "/@edit");
-        return Aswyg.$.get("/" + page.slug + "/@json");
+        window.location = "/"  + page.slug + "/@edit";
     },
 
     saveDraft: function(content) {
@@ -28,8 +27,7 @@ var editor = new Aswyg(document.body, {
     },
 
     createNew: function(page) {
-        history.pushState(page, "", "/"  + page.slug + "/@edit");
-        return Aswyg.$.get("/" + page.slug + "/@json");
+        window.location = "/"  + page.slug + "/@edit";
     },
 
     logout: function() {
@@ -47,10 +45,5 @@ var editor = new Aswyg(document.body, {
 
 });
 
-
-window.onpopstate = function() {
-    // TODO: setContent
-    console.log("pop state", arguments);
-};
 
 editor.setContent(window.PICO_INITIAL);
